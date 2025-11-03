@@ -1,0 +1,35 @@
+package templates
+
+templ Home() {
+	@Layout("Home", homeContent())
+}
+
+templ homeContent() {
+	<section>
+		<h1>Welcome to Our Campaign</h1>
+		<p>Help us make a real difference in our community.</p>
+
+		<div hx-get="/api/stats" hx-trigger="load" hx-swap="innerHTML">
+			<p>Loading stats...</p>
+		</div>
+
+		<section class="donation-section">
+			<h2>Support Our Cause</h2>
+			<form hx-post="/api/donations" hx-target="#donation-result" hx-swap="innerHTML">
+				<input type="text" name="name" placeholder="Your Name" required/>
+				<input type="email" name="email" placeholder="Email" required/>
+				<input type="number" name="amount" placeholder="Amount" step="0.01" required/>
+				<textarea name="message" placeholder="Message (optional)"></textarea>
+				<button type="submit">Donate</button>
+			</form>
+			<div id="donation-result"></div>
+		</section>
+
+		<section>
+			<h3>Recent Supporters</h3>
+			<div hx-get="/api/recent-donors" hx-trigger="load, donationComplete from:body" hx-swap="innerHTML">
+				<p>Loading donors...</p>
+			</div>
+		</section>
+	</section>
+}

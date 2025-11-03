@@ -1,0 +1,10 @@
+package templates
+
+import "fmt"
+
+templ DonationSuccess(name string, amount float64) {
+	<div class="success">
+		<h3>Thank you, { name }! 🙏</h3>
+		<p>Your donation of ${ fmt.Sprintf("%.2f", amount) } is greatly appreciated.</p>
+	</div>
+}

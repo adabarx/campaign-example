@@ -1,0 +1,10 @@
+public/
+campaign
+*_templ.go
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work

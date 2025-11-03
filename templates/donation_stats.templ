@@ -1,0 +1,39 @@
+package templates
+
+import "fmt"
+
+templ DonationStats(total float64, count int) {
+	<div class="stats">
+		<div class="stat">
+			<strong>Total Raised:</strong>
+			<span>${ fmt.Sprintf("%.2f", total) }</span>
+		</div>
+		<div class="stat">
+			<strong>Supporters:</strong>
+			<span>{ fmt.Sprintf("%d", count) }</span>
+		</div>
+	</div>
+}
+
+templ RecentDonors(donations []Donation) {
+	if len(donations) == 0 {
+		<p>No donors yet. Be the first to support our cause!</p>
+	} else {
+		<ul class="donor-list">
+			for i := len(donations) - 1; i >= 0 && i >= len(donations)-5; i-- {
+				<li>
+					<strong>{ donations[i].Name }</strong> donated <span class="amount">${ fmt.Sprintf("%.2f", donations[i].Amount) }</span>
+				</li>
+			}
+		</ul>
+	}
+}
+
+type Donation struct {
+	ID        int
+	Name      string
+	Email     string
+	Amount    float64
+	Message   string
+	CreatedAt string
+}

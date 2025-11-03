@@ -1,0 +1,37 @@
+package templates
+
+import "campaign/data"
+
+templ BlogList(posts []data.BlogPost) {
+	@Layout("Blog", blogListContent(posts))
+}
+
+templ blogListContent(posts []data.BlogPost) {
+	<section>
+		<h1>Blog</h1>
+		<div class="blog-list">
+			for _, post := range posts {
+				<article class="blog-item">
+					<h2><a href={ templ.SafeURL("/blog/" + post.Slug + ".html") }>{ post.Title }</a></h2>
+					<p class="date">{ post.Date }</p>
+					<p>{ post.Content }</p>
+				</article>
+			}
+		</div>
+	</section>
+}
+
+templ BlogPost(post data.BlogPost) {
+	@Layout(post.Title, blogPostContent(post))
+}
+
+templ blogPostContent(post data.BlogPost) {
+	<section>
+		<h1>{ post.Title }</h1>
+		<p class="date">Published: { post.Date }</p>
+		<article>
+			<p>{ post.Content }</p>
+		</article>
+		<p><a href="/blog.html">← Back to Blog</a></p>
+	</section>
+}
