@@ -44,7 +44,8 @@ campaign/
 ├── main.go                   # Fiber server, API handlers, donation state
 ├── build.go                  # Generates HTML files from templates + data
 ├── go.mod / go.sum           # Dependencies
-├── Makefile                  # Build automation
+├── build.sh                  # Build automation (Unix/Linux/macOS)
+├── build.bat                 # Build automation (Windows)
 │
 ├── templates/                # Templ components (HTML with Go)
 │   ├── layout.templ          # Base HTML wrapper
@@ -57,11 +58,16 @@ campaign/
 ├── data/
 │   └── posts.go              # Blog posts (hardcoded for PoC)
 │
+├── static-vendor/            # Vendored static assets
+│   └── htmx.min.js           # htmx library (downloaded during build)
+│
 └── public/                   # Generated output (created by build.go)
     ├── index.html            # Generated home page
     ├── about.html
     ├── blog.html
     ├── blog/*.html           # Individual posts
+    ├── js/
+    │   └── htmx.min.js       # Copied from static-vendor/
     ├── style.css             # Blank stylesheet
     └── [all generated files]
 ```
@@ -76,8 +82,8 @@ campaign/
 1. Browser: GET http://localhost:3000/
 2. Fiber: Looks for public/index.html, finds it, sends it
 3. Browser: Displays HTML
-4. HTML contains: <script src="https://unpkg.com/htmx.org"></script>
-5. htmx library loads (14KB)
+4. HTML contains: <script src="/js/htmx.min.js"></script>
+5. htmx library loads (47KB, served locally)
 6. htmx scans page, finds: <div hx-get="/api/stats" hx-trigger="load">
 7. htmx: Makes GET request to /api/stats
 8. Fiber: Runs getStats() function
@@ -134,7 +140,7 @@ Same template, two uses. This is the key to the architecture.
 
 ### htmx: Hypermedia Client Library
 
-14KB JavaScript library that adds interaction to HTML without page reloads.
+47KB JavaScript library (served locally) that adds interaction to HTML without page reloads.
 
 **What it does:**
 - Intercepts form submissions and link clicks
@@ -208,21 +214,25 @@ Handler pattern:
 
 ## Static Generation Pipeline
 
-When you run `make generate`:
+When you run `./build.sh generate` (or `build.bat generate` on Windows):
 
 ```
-1. build.go reads data/posts.go (blog posts)
-2. For each blog post, calls: templates.BlogPost(post)
-3. Templ renders component to HTML string
-4. build.go writes HTML to: public/blog/[slug].html
-5. For home page, calls: templates.Home()
-6. Templ renders to HTML
-7. build.go writes to: public/index.html
-8. Result: public/ folder fills with static HTML files
-9. Fiber serves these files when /blog/[slug].html is requested
+1. Build script ensures static-vendor/htmx.min.js exists (downloads if missing)
+2. build.go reads data/posts.go (blog posts)
+3. build.go copies static-vendor/htmx.min.js to public/js/htmx.min.js
+4. For each blog post, calls: templates.BlogPost(post)
+5. Templ renders component to HTML string
+6. build.go writes HTML to: public/blog/[slug].html
+7. For home page, calls: templates.Home()
+8. Templ renders to HTML
+9. build.go writes to: public/index.html
+10. Result: public/ folder fills with static HTML files
+11. Fiber serves these files when /blog/[slug].html is requested
 ```
 
 All HTML files are created once at build time. They never change until you rebuild.
+
+The htmx library is downloaded once (if not present) and copied into the public directory during each build, eliminating the need for external CDN dependencies at runtime.
 
 ---
 
@@ -348,7 +358,7 @@ Edit `data/posts.go`:
 }
 ```
 
-Run `make generate`. New post appears at `/blog/new-post.html` and in blog list.
+Run `./build.sh generate` (or `build.bat generate` on Windows). New post appears at `/blog/new-post.html` and in blog list.
 
 ### Add a form field
 
@@ -391,7 +401,7 @@ Edit `build.go`, add to `generateStaticSite()`:
 renderToFile("public/contact.html", templates.Contact())
 ```
 
-Run `make generate`. Page appears at `/contact.html`.
+Run `./build.sh generate` (or `build.bat generate` on Windows). Page appears at `/contact.html`.
 
 ### Add an API endpoint
 
@@ -421,9 +431,9 @@ Use in HTML:
 ### Manual browser testing
 
 ```bash
-make install
-make generate
-make run
+./build.sh install    # or build.bat install on Windows
+./build.sh generate   # or build.bat generate on Windows
+./build.sh run        # or build.bat run on Windows
 ```
 
 Visit `http://localhost:3000`:
@@ -485,25 +495,49 @@ All HTML. All the time.
 
 ## Build & Run
 
+**Unix/Linux/macOS:**
 ```bash
 # Install dependencies
-make install
+./build.sh install
 
 # Generate static HTML files
-make generate
+./build.sh generate
 
 # Run server (includes auto-generate)
-make run
+./build.sh run
 
 # Visit http://localhost:3000
 ```
+
+**Windows:**
+```cmd
+REM Install dependencies
+build.bat install
+
+REM Generate static HTML files
+build.bat generate
+
+REM Run server (includes auto-generate)
+build.bat run
+
+REM Visit http://localhost:3000
+```
+
+The build scripts automatically download htmx v1.9.10 if not present in `static-vendor/`.
 
 ---
 
 ## Dependencies
 
+### Runtime Dependencies
 - `github.com/gofiber/fiber/v2` → Web server
 - `github.com/a-h/templ` → Template engine
+
+### Build-Time Dependencies
+- `htmx@1.9.10` → Downloaded from unpkg.com during build if not present
+  - Stored in: `static-vendor/htmx.min.js`
+  - Copied to: `public/js/htmx.min.js` during generation
+  - Served locally at runtime (no CDN dependency)
 
 ---
 
