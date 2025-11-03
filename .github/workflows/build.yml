@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     
     steps:
@@ -19,16 +19,109 @@ jobs:
         go-version: '1.21'
     
     - name: Install dependencies
-      run: make install
+      run: ./build.sh install
     
     - name: Generate templates
-      run: make generate
+      run: ./build.sh generate
     
     - name: Build
-      run: make build
+      run: ./build.sh build
     
     - name: Verify build artifacts
       run: |
         test -f campaign
         test -d public
-        echo "Build successful!"
+        echo "Build successful on Linux!"
+
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+    
+    - name: Install dependencies
+      run: build.bat install
+    
+    - name: Generate templates
+      run: build.bat generate
+    
+    - name: Build
+      run: build.bat build
+    
+    - name: Verify build artifacts
+      run: |
+        if (!(Test-Path campaign.exe)) { exit 1 }
+        if (!(Test-Path public)) { exit 1 }
+        echo "Build successful on Windows!"
+      shell: powershell
+
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+    
+    - name: Install dependencies
+      run: ./build.sh install
+    
+    - name: Generate templates
+      run: ./build.sh generate
+    
+    - name: Build
+      run: ./build.sh build
+    
+    - name: Verify build artifacts
+      run: |
+        test -f campaign
+        test -d public
+        echo "Build successful on macOS!"
+
+  build-freebsd:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build on FreeBSD
+      uses: vmactions/freebsd-vm@v1
+      with:
+        usesh: true
+        prepare: |
+          pkg install -y go templ curl
+        run: |
+          go mod download
+          templ generate
+          go run main.go build.go --generate
+          go build -o campaign
+          test -f campaign && echo "Build successful on FreeBSD!"
+
+  build-haiku:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build on Haiku
+      uses: vmactions/haiku-vm@v1
+      with:
+        usesh: true
+        prepare: |
+          pkgman install -y go curl
+        run: |
+          go mod download
+          go install github.com/a-h/templ/cmd/templ@latest
+          export PATH=$PATH:$(go env GOPATH)/bin
+          templ generate
+          go run main.go build.go --generate
+          go build -o campaign
+          test -f campaign && echo "Build successful on Haiku!"

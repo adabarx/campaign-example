@@ -4,24 +4,37 @@ Campaign website built with htmx, Go/Fiber, and templ.
 
 ## Quick Start
 
+**Unix/Linux/macOS:**
 ```bash
 # Install dependencies
-make install
+./build.sh install
 
 # Generate static site and run server
-make run
+./build.sh run
+```
+
+**Windows:**
+```cmd
+REM Install dependencies
+build.bat install
+
+REM Generate static site and run server
+build.bat run
 ```
 
 Visit http://localhost:3000
 
 ## Commands
 
-- `make install` - Install Go dependencies and templ
-- `make generate` - Generate templ code and static HTML
-- `make run` - Run the server
-- `make build` - Build binary
-- `make clean` - Remove generated files
-- `make test` - Show test commands
+**Unix/Linux/macOS:** Use `./build.sh <command>`  
+**Windows:** Use `build.bat <command>`
+
+- `install` - Install Go dependencies and templ
+- `generate` - Generate templ code and static HTML
+- `run` - Run the server
+- `build` - Build binary
+- `clean` - Remove generated files
+- `test` - Show test commands
 
 ## Project Structure
 
