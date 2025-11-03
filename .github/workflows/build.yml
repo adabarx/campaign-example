@@ -1,0 +1,34 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+    
+    - name: Install dependencies
+      run: make install
+    
+    - name: Generate templates
+      run: make generate
+    
+    - name: Build
+      run: make build
+    
+    - name: Verify build artifacts
+      run: |
+        test -f campaign
+        test -d public
+        echo "Build successful!"
