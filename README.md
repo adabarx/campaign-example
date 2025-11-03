@@ -1,14 +1,6 @@
 # Campaign Website
 
-A modern campaign website built with htmx, Go/Fiber, and templ.
-
-## Features
-
-- 🚀 Static site generation for fast page loads
-- ⚡ Dynamic donation system with htmx
-- 📝 Blog with individual posts
-- 💰 Real-time donation stats
-- 🎯 No frontend framework needed
+Campaign website built with htmx, Go/Fiber, and templ.
 
 ## Quick Start
 
