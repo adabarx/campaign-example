@@ -24,16 +24,17 @@ goto end
 echo Generating templ code and static HTML...
 templ generate
 go run main.go build.go --generate
+if "%2"=="from_build" exit /b
 goto end
 
 :build
-call :generate
+call :generate from_build
 echo Building binary...
 go build -o campaign.exe
 goto end
 
 :run
-call :generate
+call :generate from_build
 echo Running server...
 go run main.go build.go
 goto end
