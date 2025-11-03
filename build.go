@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -17,6 +18,13 @@ func generateStaticSite() error {
 
 	os.MkdirAll("public", 0755)
 	os.MkdirAll("public/blog", 0755)
+	os.MkdirAll("public/js", 0755)
+
+	// Copy vendor files
+	if err := copyFile("static-vendor/htmx.min.js", "public/js/htmx.min.js"); err != nil {
+		return fmt.Errorf("failed to copy htmx: %w", err)
+	}
+	fmt.Println("✅ Copied: static-vendor/htmx.min.js -> public/js/htmx.min.js")
 
 	if err := renderToFile("public/index.html", templates.Home()); err != nil {
 		return err
@@ -59,4 +67,21 @@ func renderToFile(filename string, component templ.Component) error {
 	defer file.Close()
 
 	return component.Render(context.Background(), file)
+}
+
+func copyFile(src, dst string) error {
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
+
+	destFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, sourceFile)
+	return err
 }

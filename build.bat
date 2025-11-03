@@ -1,6 +1,9 @@
 @echo off
 setlocal
 
+set HTMX_VERSION=1.9.10
+set HTMX_FILE=static-vendor\htmx.min.js
+
 if "%1"=="" goto help
 if "%1"=="install" goto install
 if "%1"=="generate" goto generate
@@ -14,14 +17,25 @@ if "%1"=="help" goto help
 echo Unknown command: %1
 goto help
 
+:ensure_htmx
+if not exist "%HTMX_FILE%" (
+    echo Downloading htmx %HTMX_VERSION%...
+    if not exist static-vendor mkdir static-vendor
+    curl -sSL "https://unpkg.com/htmx.org@%HTMX_VERSION%/dist/htmx.min.js" -o "%HTMX_FILE%"
+    echo ✅ Downloaded htmx
+)
+exit /b
+
 :install
 echo Installing dependencies...
 go mod download
 go install github.com/a-h/templ/cmd/templ@latest
+call :ensure_htmx
 goto end
 
 :generate
 echo Generating templ code and static HTML...
+call :ensure_htmx
 templ generate
 go run main.go build.go --generate
 if "%2"=="from_build" exit /b

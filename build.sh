@@ -2,14 +2,28 @@
 
 set -e
 
+HTMX_VERSION="1.9.10"
+HTMX_FILE="static-vendor/htmx.min.js"
+
+function ensure_htmx() {
+    if [ ! -f "$HTMX_FILE" ]; then
+        echo "Downloading htmx ${HTMX_VERSION}..."
+        mkdir -p static-vendor
+        curl -sSL "https://unpkg.com/htmx.org@${HTMX_VERSION}/dist/htmx.min.js" -o "$HTMX_FILE"
+        echo "✅ Downloaded htmx"
+    fi
+}
+
 function install() {
     echo "Installing dependencies..."
     go mod download
     go install github.com/a-h/templ/cmd/templ@latest
+    ensure_htmx
 }
 
 function generate() {
     echo "Generating templ code and static HTML..."
+    ensure_htmx
     templ generate
     go run main.go build.go --generate
 }
